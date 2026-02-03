@@ -1,9 +1,6 @@
 {
   "name": "Container Gym",
-  "build": {
-    "dockerfile": "../../gymctl/Dockerfile",
-    "context": "../../gymctl"
-  },
+  "image": "ghcr.io/shart-cloud/gymctl:latest",
 
   // Features to add to the dev container
   "features": {
@@ -43,12 +40,7 @@
         "ms-vscode.makefile-tools"
       ],
       "settings": {
-        "terminal.integrated.defaultProfile.linux": "zsh",
-        "terminal.integrated.profiles.linux": {
-          "zsh": {
-            "path": "/bin/zsh"
-          }
-        }
+        "terminal.integrated.defaultProfile.linux": "bash"
       }
     }
   },
@@ -63,7 +55,5 @@
   "forwardPorts": [],
 
   // Workspace folder
-  "workspaceFolder": "/workspace",
-
-  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind"
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}"
 }

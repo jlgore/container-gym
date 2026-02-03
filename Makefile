@@ -1,7 +1,7 @@
 # Container Gym Makefile
 
 # Variables
-COMPOSE = docker-compose
+COMPOSE = docker compose
 GYMCTL_IMAGE = ghcr.io/shart-cloud/gymctl:latest
 CONTAINER_NAME = container-gym
 
@@ -12,15 +12,13 @@ help: ## Show this help message
 	@echo ""
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
 
-pull: ## Pull gymctl image from registry
-	@echo "Pulling gymctl image..."
-	docker pull $(GYMCTL_IMAGE)
+build: ## Build gymctl image locally
+	@echo "Building gymctl image from source..."
+	$(COMPOSE) build
 
 up: ## Start container gym environment
-	@echo "Pulling latest image..."
-	@docker pull $(GYMCTL_IMAGE)
-	@echo "Starting Container Gym..."
-	$(COMPOSE) up -d
+	@echo "Building and starting Container Gym..."
+	$(COMPOSE) up -d --build
 	@echo ""
 	@echo "Container Gym is running!"
 	@echo "Connect with: make shell"
@@ -55,7 +53,7 @@ dev-shell: ## Start shell with live code mount
 		-v gym-progress:/home/gymuser/.gym \
 		-v ./workspace:/workspace \
 		-w /workspace \
-		$(GYMCTL_IMAGE) /bin/bash
+		container-gym-gymctl /bin/bash
 
 test-exercise: ## Test a specific exercise (use EXERCISE=name)
 	@if [ -z "$(EXERCISE)" ]; then \

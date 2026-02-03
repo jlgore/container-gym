@@ -1,9 +1,8 @@
-version: '3.8'
-
 services:
   gymctl:
-    image: ghcr.io/shart-cloud/gymctl:latest
-    pull_policy: always
+    build:
+      context: ../gymctl
+      dockerfile: Dockerfile
     container_name: container-gym
     hostname: gym
     stdin_open: true
@@ -20,7 +19,7 @@ services:
       - DOCKER_HOST=unix:///var/run/docker.sock
     working_dir: /workspace
     user: gymuser
-    command: /bin/bash
+    command: ["bash", "-c", "while true; do sleep 30; done"]
     networks:
       - gym-network
 

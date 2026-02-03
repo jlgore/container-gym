@@ -1,6 +1,6 @@
 {
   "name": "Container Gym",
-  "image": "ghcr.io/shart-cloud/gymctl:latest",
+  "image": "ghcr.io/shart-cloud/gymctl:v0.1.0",
 
   // Features to add to the dev container
   "features": {

@@ -1,6 +1,6 @@
 {
   "name": "Container Gym",
-  "image": "ghcr.io/shart-cloud/gymctl:latest",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
 
   // Features to add to the dev container
   "features": {
@@ -21,13 +21,11 @@
   // Container configuration
   "containerEnv": {
     "GYMCTL_HOME": "/home/gymuser/.gym",
-    "DOCKER_HOST": "unix:///var/run/docker.sock"
+    "GYMCTL_IMAGE": "ghcr.io/shart-cloud/gymctl:latest"
   },
 
-  // Mount the Docker socket for Docker exercises
-  "mounts": [
-    "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
-  ],
+  // Required for Docker-in-Docker.
+  "privileged": true,
 
   // VS Code extensions for working with exercises
   "customizations": {
@@ -48,12 +46,8 @@
   // Run as non-root user
   "remoteUser": "gymuser",
 
-  // Ensure the image exists locally before the Dev Containers CLI inspects it.
-  // If this fails, it's typically because the tag doesn't exist or GHCR access isn't configured (private package).
-  "initializeCommand": "docker pull ghcr.io/shart-cloud/gymctl:latest",
-
   // Commands to run after the container is created
-  "postCreateCommand": "gymctl list && echo 'Welcome to Container Gym! Run \"gymctl list\" to see available exercises.'",
+  "postCreateCommand": "bash .devcontainer/postCreate.sh",
 
   // Forward ports for any services
   "forwardPorts": [],

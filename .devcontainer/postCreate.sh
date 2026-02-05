@@ -24,13 +24,61 @@ docker_args=(--rm)
 if [[ -t 0 ]]; then docker_args+=(-i); fi
 if [[ -t 1 ]]; then docker_args+=(-t); fi
 
-exec docker run "${docker_args[@]}" \
-  -e GYMCTL_HOME="/home/gymuser/.gym" \
-  -v /var/run/docker.sock:/var/run/docker.sock \
-  -v "$workspace:/workspace" \
-  -w /workspace \
-  -v "$gym_home:/home/gymuser/.gym" \
-  "$image" "$@"
+# Check if this is a "start" command
+if [ "${1:-}" = "start" ] && [ -n "${2:-}" ]; then
+    exercise_name="$2"
+
+    # First, run the start command to set up the environment
+    docker run "${docker_args[@]}" \
+      -e GYMCTL_HOME="/home/gymuser/.gym" \
+      -v /var/run/docker.sock:/var/run/docker.sock \
+      -v "$workspace:/workspace" \
+      -w /workspace \
+      -v "$gym_home:/home/gymuser/.gym" \
+      "$image" start "$exercise_name"
+
+    start_exit_code=$?
+
+    # If start succeeded, enter interactive shell in the exercise work directory
+    if [ $start_exit_code -eq 0 ]; then
+        echo ""
+        echo "=========================================="
+        echo "Entering interactive gym environment..."
+        echo "You are now in the work directory for: $exercise_name"
+        echo "Type 'exit' to return to your Codespace"
+        echo "=========================================="
+        echo ""
+
+        # Enter interactive shell at the work directory
+        exec docker run -it --rm \
+          -e GYMCTL_HOME="/home/gymuser/.gym" \
+          -v /var/run/docker.sock:/var/run/docker.sock \
+          -v "$workspace:/workspace" \
+          -w "/home/gymuser/.gym/workdir/$exercise_name" \
+          -v "$gym_home:/home/gymuser/.gym" \
+          "$image" bash
+    else
+        exit $start_exit_code
+    fi
+elif [ "${1:-}" = "shell" ]; then
+    # Interactive shell mode
+    exec docker run -it --rm \
+      -e GYMCTL_HOME="/home/gymuser/.gym" \
+      -v /var/run/docker.sock:/var/run/docker.sock \
+      -v "$workspace:/workspace" \
+      -w /workspace \
+      -v "$gym_home:/home/gymuser/.gym" \
+      "$image" bash
+else
+    # For all other commands, run normally
+    exec docker run "${docker_args[@]}" \
+      -e GYMCTL_HOME="/home/gymuser/.gym" \
+      -v /var/run/docker.sock:/var/run/docker.sock \
+      -v "$workspace:/workspace" \
+      -w /workspace \
+      -v "$gym_home:/home/gymuser/.gym" \
+      "$image" "$@"
+fi
 EOF
 sudo chmod +x /usr/local/bin/gymctl
 
@@ -47,4 +95,11 @@ echo "Pulling ${GYMCTL_IMAGE} into the Docker-in-Docker daemon..."
 docker pull "$GYMCTL_IMAGE"
 
 gymctl list
-echo "Welcome to Container Gym! Run \"gymctl list\" to see available exercises."
+echo ""
+echo "Welcome to Container Gym!"
+echo ""
+echo "Commands:"
+echo "  gymctl list                - List available exercises"
+echo "  gymctl start <exercise>    - Start an exercise (enters interactive shell)"
+echo "  gymctl shell               - Enter interactive gym shell"
+echo "  gymctl <command>           - Run any other gymctl command"
